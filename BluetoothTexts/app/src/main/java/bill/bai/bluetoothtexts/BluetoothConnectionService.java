@@ -1,6 +1,8 @@
 package bill.bai.bluetoothtexts;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
@@ -21,6 +23,12 @@ public class BluetoothConnectionService {
 
     // Accept Thread
     private AcceptThread mInsecureAcceptThread;
+
+    private ConnectThread mConnectThread;
+    private BluetoothDevice mDevice;
+    private UUID deviceUUID;
+    ProgressDialog mProgressDialog;
+
 
     public BluetoothConnectionService(Context mContext) {
         this.mContext = mContext;
@@ -79,5 +87,12 @@ public class BluetoothConnectionService {
                 Log.e(TAG, "Cancel: Close of AcceptThread ServerSocket failed. " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Runs while making outgoing connection w/ device
+     */
+    private class ConnectThread extends Thread{
+        
     }
 }
