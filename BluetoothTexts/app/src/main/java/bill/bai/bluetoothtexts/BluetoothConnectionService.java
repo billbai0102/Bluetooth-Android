@@ -9,6 +9,9 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.UUID;
 
 public class BluetoothConnectionService {
@@ -28,6 +31,8 @@ public class BluetoothConnectionService {
     private BluetoothDevice mDevice;
     private UUID deviceUUID;
     ProgressDialog mProgressDialog;
+
+    private ConnectedThread mConnectedThread;
 
 
     public BluetoothConnectionService(Context mContext) {
@@ -175,5 +180,86 @@ public class BluetoothConnectionService {
 
         mConnectThread = new ConnectThread(device, uuid);
         mConnectThread.start();
+    }
+
+    /**
+     * Responsible for maintaining bluetooth connection
+     * sends and receives data through IO Streams.
+     */
+    private class ConnectedThread extends Thread{
+        private final BluetoothSocket mSocket;
+        private final InputStream mInputStream;
+        private final OutputStream mOutputStream;
+
+        public ConnectedThread(BluetoothSocket socket){
+            Log.d(TAG, "ConnectedThread: Starting...");
+
+            mSocket = socket;
+            InputStream tempIn = null;
+            OutputStream tempOut = null;
+
+            // Dismisses progress dialog when connection established.
+            mProgressDialog.dismiss();
+
+            try {
+                tempIn = mSocket.getInputStream();
+                tempOut = mSocket.getOutputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mInputStream = tempIn;
+            mOutputStream = tempOut;
+        }
+
+        public void run(){
+            byte[] buffer = new byte[1024]; // Buffer for the streams
+            int bytes;
+
+            while(true){
+                try {
+                    bytes = mInputStream.read(buffer);
+                    String incomingMsg = new String(buffer, 0, bytes);
+                    Log.d(TAG, "Inputer Stream: " + incomingMsg);
+                } catch (IOException e) {
+                    Log.wtf(TAG, "ConnectedThread: Error reading inputStream " + e.getMessage());
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        }
+
+        public void write(byte[] bytes){
+            String text = new String(bytes, Charset.defaultCharset());
+            Log.d(TAG, "write: Writing to outputStream: " + text);
+            try {
+                mOutputStream.write(bytes);
+            } catch (IOException e) {
+                Log.wtf(TAG, "ConnectedThread: Error writing outputStream " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        public void cancel(){
+            try{
+                mSocket.close();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void connected(BluetoothSocket mSocket, BluetoothDevice mBluetoothDevice){
+        Log.d(TAG, "connected: Starting...");
+
+        // Start thread to manage connection and transmissions
+        mConnectedThread = new ConnectedThread(mSocket);
+        mConnectedThread.start();
+    }
+
+    // Write to ConnectedThread in asynchronous manner
+    public void write(byte[] out){
+        Log.d(TAG, "write: Write called..");
+        mConnectedThread.write(out);
     }
 }
