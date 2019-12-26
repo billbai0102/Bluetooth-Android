@@ -1,13 +1,17 @@
 package bill.bai.bluetoothtexts;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
             if (action.equals(mBluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, mBluetoothAdapter.ERROR);
 
-                switch (state){
+                switch (state) {
                     case BluetoothAdapter.STATE_OFF:
                         Log.d(TAG, "onReceive: STATE_OFF");
                         break;
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver1);
     }
@@ -52,6 +56,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                    Manifest.permission.BLUETOOTH
+            }, 10);
+        }
 
         Button btnOnOff = (Button) findViewById(R.id.btnOnOff);
 
@@ -67,18 +77,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //On click listener for btnOnOff
-    public void enableDisableBluetooth(){
-        if(mBluetoothAdapter == null){
+    public void enableDisableBluetooth() {
+        if (mBluetoothAdapter == null) {
             Log.d(TAG, "enableDisableBluetooth: Device doesn't have BT Capabilities.");
         }
-        if(!mBluetoothAdapter.isEnabled()){
+
+
+        if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBluetoothIntent);
+
 
             IntentFilter bluetoothIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mBroadcastReceiver1, bluetoothIntent);
         }
-        if(mBluetoothAdapter.isEnabled()){
+        if (mBluetoothAdapter.isEnabled()) {
             mBluetoothAdapter.disable();
 
             IntentFilter bluetoothIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
