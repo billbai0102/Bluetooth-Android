@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             }, 10);
         }
 
-        Button btnOnOff = (Button) findViewById(R.id.btnOnOff);
+        Button btnOnOff = findViewById(R.id.btnOnOff);
 
         //Get default bt adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
