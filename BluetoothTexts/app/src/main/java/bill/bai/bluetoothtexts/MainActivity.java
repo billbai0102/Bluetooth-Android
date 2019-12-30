@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnOnOff = findViewById(R.id.btnOnOff);
 
-        //Get default bt adapter
+        //Get default bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         btnOnOff.setOnClickListener(new View.OnClickListener() {
