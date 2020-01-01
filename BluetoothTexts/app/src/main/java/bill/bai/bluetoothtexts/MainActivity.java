@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
             }, 10);
         }
 
+        //Button that turns bluetooth on and off.
         Button btnOnOff = findViewById(R.id.btnOnOff);
 
         //Get default bluetooth adapter
